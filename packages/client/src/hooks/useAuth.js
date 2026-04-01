@@ -1,71 +1,99 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import api from '../utils/api';
-import toast from 'react-hot-toast';
+import * as api from '../utils/api';
 
 const useAuthStore = create(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
       loading: true,
-      
+      error: null,
+
+      setUser: (user) => set({ user }),
+      setLoading: (loading) => set({ loading }),
+      setError: (error) => set({ error }),
+
       checkAuth: async () => {
+        set({ loading: true });
         try {
-          const response = await api.get('/auth/me');
-          set({ user: response.data, loading: false });
-          return response.data;
+          const user = await api.getMe();
+          set({ user, loading: false, error: null });
+          return user;
         } catch (error) {
-          set({ user: null, loading: false });
+          set({ user: null, loading: false, error: error.message });
           return null;
         }
       },
-      
+
       login: async (username, password) => {
-        const response = await api.post('/auth/login', { username, password });
-        if (response.data.success) {
-          set({ user: response.data.user });
-          return response.data.user;
+        set({ loading: true, error: null });
+        try {
+          const user = await api.login(username, password);
+          set({ user, loading: false });
+          return user;
+        } catch (error) {
+          set({ error: error.message, loading: false });
+          throw error;
         }
-        throw new Error('Login failed');
       },
-      
+
       register: async (username, password) => {
-        const response = await api.post('/auth/register', { username, password });
-        if (response.data.success) {
-          set({ user: response.data.user });
-          return response.data.user;
+        set({ loading: true, error: null });
+        try {
+          const user = await api.register(username, password);
+          set({ user, loading: false });
+          return user;
+        } catch (error) {
+          set({ error: error.message, loading: false });
+          throw error;
         }
-        throw new Error('Registration failed');
       },
-      
+
       logout: async () => {
         try {
-          await api.post('/auth/logout');
+          await api.logout();
         } catch (error) {
           console.error('Logout error:', error);
         }
-        set({ user: null });
+        set({ user: null, error: null });
       },
-      
-      updateProfile: async (data) => {
-        const response = await api.put('/profile', data);
-        set((state) => ({ user: { ...state.user, ...response.data } }));
-        return response.data;
-      },
-      
-      updateAvatar: async (avatarUrl) => {
-        set((state) => ({ user: { ...state.user, avatarUrl } }));
+
+      updateUser: (updates) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null
+        }));
       }
     }),
     {
       name: 'pafos-auth',
-      getStorage: () => localStorage,
+      partialize: (state) => ({ user: state.user })
     }
   )
 );
 
 export const useAuth = () => {
-  const { user, loading, checkAuth, login, register, logout, updateProfile, updateAvatar } = useAuthStore();
-  return { user, loading, checkAuth, login, register, logout, updateProfile, updateAvatar };
+  const {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    checkAuth,
+    updateUser,
+    setUser
+  } = useAuthStore();
+
+  return {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    checkAuth,
+    updateUser,
+    setUser,
+    isAuthenticated: !!user
+  };
 };
