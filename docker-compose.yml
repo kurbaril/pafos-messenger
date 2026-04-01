@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: pafos-postgres
+    environment:
+      POSTGRES_USER: pafos
+      POSTGRES_PASSWORD: pafos_secret
+      POSTGRES_DB: pafos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pafos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pafos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: pafos-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pafos-network
+    command: redis-server --appendonly yes
+
+  backend:
+    build: ./packages/backend
+    container_name: pafos-backend
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://pafos:pafos_secret@postgres:5432/pafos
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_SECRET_TOKEN: ${ADMIN_SECRET_TOKEN}
+      ADMIN_SECRET_URL: ${ADMIN_SECRET_URL}
+      NODE_ENV: development
+      PORT: 3001
+    volumes:
+      - ./packages/backend:/app
+      - /app/node_modules
+      - uploads_data:/app/src/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - pafos-network
+
+  client:
+    build: ./packages/client
+    container_name: pafos-client
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3001
+      VITE_WS_URL: ws://localhost:3001
+    volumes:
+      - ./packages/client:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - pafos-network
+
+  admin:
+    build: ./packages/admin
+    container_name: pafos-admin
+    ports:
+      - "5174:5174"
+    environment:
+      VITE_API_URL: http://localhost:3001
+      VITE_ADMIN_SECRET: ${ADMIN_SECRET_URL}
+    volumes:
+      - ./packages/admin:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - pafos-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+
+networks:
+  pafos-network:
+    driver: bridge

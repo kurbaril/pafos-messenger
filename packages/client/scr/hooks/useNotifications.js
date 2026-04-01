@@ -1,0 +1,126 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from './useAuth';
+import { getNotifications, markNotificationRead, markAllNotificationsRead, getUnreadCount } from '../api';
+
+export const useNotifications = () => {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const data = await getNotifications();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const fetchUnreadCount = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const count = await getUnreadCount();
+      setUnreadCount(count);
+    } catch (err) {
+      console.error('Failed to fetch unread count:', err);
+    }
+  }, [user]);
+
+  const markAsRead = useCallback(async (notificationId) => {
+    try {
+      await markNotificationRead(notificationId);
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  }, []);
+
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await markAllNotificationsRead();
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, isRead: true }))
+      );
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+    }
+  }, []);
+
+  const addNotification = useCallback((notification) => {
+    setNotifications(prev => [notification, ...prev]);
+    if (!notification.isRead) {
+      setUnreadCount(prev => prev + 1);
+    }
+  }, []);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    fetchNotifications();
+    
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [user, fetchNotifications, fetchUnreadCount]);
+
+  // Listen for new notifications via WebSocket
+  useEffect(() => {
+    if (!user) return;
+
+    const handleNewNotification = (event) => {
+      const notification = event.detail;
+      addNotification(notification);
+      
+      // Show browser notification if supported
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(notification.title, {
+          body: notification.body,
+          icon: '/icon-192.png'
+        });
+      }
+    };
+
+    window.addEventListener('newNotification', handleNewNotification);
+    return () => window.removeEventListener('newNotification', handleNewNotification);
+  }, [user, addNotification]);
+
+  // Request notification permission
+  const requestPermission = useCallback(async () => {
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+    return false;
+  }, []);
+
+  return {
+    notifications,
+    unreadCount,
+    loading,
+    error,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    requestPermission
+  };
+};

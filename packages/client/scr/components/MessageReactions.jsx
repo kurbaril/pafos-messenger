@@ -1,0 +1,111 @@
+import React, { useState, useRef, useEffect } from 'react';
+import Avatar from './Avatar';
+
+const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+
+export default function MessageReactions({ message, onAddReaction, onRemoveReaction, currentUserId }) {
+  const [showPicker, setShowPicker] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setShowPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  if (!message) return null;
+
+  // Group reactions by emoji
+  const reactionsMap = new Map();
+  message.reactions?.forEach(reaction => {
+    if (!reactionsMap.has(reaction.emoji)) {
+      reactionsMap.set(reaction.emoji, []);
+    }
+    reactionsMap.get(reaction.emoji).push(reaction);
+  });
+
+  const hasUserReacted = (emoji) => {
+    return message.reactions?.some(r => r.emoji === emoji && r.userId === currentUserId);
+  };
+
+  const handleReactionClick = (emoji) => {
+    if (hasUserReacted(emoji)) {
+      onRemoveReaction?.(message.id, emoji);
+    } else {
+      onAddReaction?.(message.id, emoji);
+    }
+    setShowPicker(false);
+  };
+
+  const getReactionTooltip = (emoji, users) => {
+    const names = users.map(u => u.username).join(', ');
+    return `${emoji} · ${names}`;
+  };
+
+  return (
+    <div 
+      className="relative inline-flex items-center gap-1"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Display reactions */}
+      {Array.from(reactionsMap.entries()).map(([emoji, users]) => (
+        <button
+          key={emoji}
+          onClick={() => handleReactionClick(emoji)}
+          className={`
+            reaction-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm
+            transition-all hover:scale-105
+            ${hasUserReacted(emoji) 
+              ? 'bg-primary/20 text-primary' 
+              : 'bg-surface-hover text-text-secondary hover:bg-surface-hover/80'}
+          `}
+          title={getReactionTooltip(emoji, users.map(u => u.user))}
+        >
+          <span>{emoji}</span>
+          <span className="text-xs">{users.length}</span>
+        </button>
+      ))}
+
+      {/* Add reaction button (visible on hover) */}
+      {hovered && (
+        <button
+          onClick={() => setShowPicker(!showPicker)}
+          className="reaction-add-btn p-1 rounded-full bg-surface-hover hover:bg-surface-hover/80 transition-all"
+          title="Add reaction"
+        >
+          <svg className="w-4 h-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+      )}
+
+      {/* Emoji picker */}
+      {showPicker && (
+        <div 
+          ref={pickerRef}
+          className="absolute bottom-full left-0 mb-2 p-2 bg-surface border border-border rounded-xl shadow-lg flex gap-1 z-50 animate-fadeInUp"
+        >
+          {EMOJIS.map(emoji => (
+            <button
+              key={emoji}
+              onClick={() => handleReactionClick(emoji)}
+              className={`
+                w-8 h-8 rounded-full flex items-center justify-center text-xl
+                transition-all hover:scale-110 hover:bg-surface-hover
+                ${hasUserReacted(emoji) ? 'bg-primary/20 ring-1 ring-primary' : ''}
+              `}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

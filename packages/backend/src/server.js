@@ -1,0 +1,148 @@
+import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import session from 'express-session';
+import pgSession from 'connect-pg-simple';
+import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Routes
+import authRoutes from './routes/auth.js';
+import profileRoutes from './routes/profile.js';
+import chatRoutes from './routes/chats.js';
+import groupRoutes from './routes/groups.js';
+import messageRoutes from './routes/messages.js';
+import searchRoutes from './routes/search.js';
+import pinnedRoutes from './routes/pinned.js';
+import mentionRoutes from './routes/mentions.js';
+import uploadRoutes from './routes/upload.js';
+import blockRoutes from './routes/blocks.js';
+import adminRoutes from './routes/admin.js';
+
+// WebSocket
+import { setupWebSocket } from './websocket.js';
+
+// Middleware
+import { rateLimitMiddleware } from './middleware/rateLimit.js';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export const prisma = new PrismaClient();
+
+const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:5173', 'http://localhost:5174', process.env.CLIENT_URL],
+    credentials: true
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+// Session middleware
+const PgSession = pgSession(session);
+export const sessionMiddleware = session({
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'Session',
+    ttl: 365 * 24 * 60 * 60 // 1 year
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 365 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
+});
+
+// Apply middleware
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
+
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174', process.env.CLIENT_URL],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(sessionMiddleware);
+app.use(rateLimitMiddleware);
+
+// Static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/pinned', pinnedRoutes);
+app.use('/api/mentions', mentionRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/blocks', blockRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Setup WebSocket with session support
+setupWebSocket(io);
+
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+  console.log(`🚀 PaFos server running on http://localhost:${PORT}`);
+  console.log(`📡 WebSocket ready`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing server...');
+  await prisma.$disconnect();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, closing server...');
+  await prisma.$disconnect();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});

@@ -1,0 +1,64 @@
+:root {
+  /* Основные цвета - тёмная тема */
+  --color-bg: #0F0F0F;
+  --color-surface: #1A1A1A;
+  --color-surface-hover: #252525;
+  --color-surface-active: #2A2A2A;
+  
+  /* Акцентные цвета - фиолетовый */
+  --color-primary: #7C3AED;
+  --color-primary-hover: #8B5CF6;
+  --color-primary-active: #6D28D9;
+  --color-primary-light: #A78BFA;
+  --color-primary-dark: #5B21B6;
+  
+  /* Текст */
+  --color-text: #E5E5E5;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted: #6B7280;
+  --color-text-inverse: #0F0F0F;
+  
+  /* Статусы */
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  
+  /* Онлайн статус */
+  --color-online: #10B981;
+  --color-offline: #6B7280;
+  --color-away: #F59E0B;
+  --color-busy: #EF4444;
+  
+  /* Границы и тени */
+  --border-color: #2A2A2A;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  
+  /* Скругления */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+  
+  /* Анимации */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s ease;
+  
+  /* Размеры */
+  --header-height: 60px;
+  --input-height: 70px;
+  --sidebar-width: 320px;
+  --sidebar-width-collapsed: 80px;
+  
+  /* Z-index */
+  --z-dropdown: 1000;
+  --z-modal: 1100;
+  --z-toast: 1200;
+  --z-tooltip: 1300;
+}

@@ -1,0 +1,303 @@
+/* ==================== ДЕСКТОП (по умолчанию) ==================== */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.chat-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
+/* ==================== ПЛАНШЕТ (768px - 1024px) ==================== */
+@media (max-width: 1024px) and (min-width: 768px) {
+  .chat-sidebar {
+    width: 280px;
+  }
+  
+  .message {
+    max-width: 75%;
+  }
+  
+  .chat-header {
+    padding: 12px 16px;
+  }
+  
+  .message-input-container {
+    padding: 12px;
+  }
+}
+
+/* ==================== ТЕЛЕФОН (до 768px) ==================== */
+@media (max-width: 768px) {
+  /* Одна панель активна, другая скрыта */
+  .app-layout {
+    position: relative;
+  }
+  
+  .chat-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    transform: translateX(0);
+    transition: transform var(--transition-normal);
+  }
+  
+  .chat-sidebar.hidden {
+    transform: translateX(-100%);
+  }
+  
+  .chat-main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    transform: translateX(0);
+    transition: transform var(--transition-normal);
+  }
+  
+  .chat-main.hidden {
+    transform: translateX(100%);
+  }
+  
+  /* Кнопка назад в чате */
+  .back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: background var(--transition-fast);
+  }
+  
+  .back-button:hover {
+    background: var(--color-surface-hover);
+  }
+  
+  /* Сообщения занимают больше ширины */
+  .message {
+    max-width: 85%;
+  }
+  
+  /* Уменьшаем отступы */
+  .chat-header {
+    padding: 10px 12px;
+  }
+  
+  .message-input-container {
+    padding: 10px 12px;
+  }
+  
+  /* Список чатов на телефоне */
+  .chat-list-item {
+    padding: 12px;
+  }
+  
+  /* Аватарки поменьше */
+  .avatar {
+    width: 48px;
+    height: 48px;
+  }
+  
+  /* Панель реакций */
+  .reactions-panel {
+    gap: 4px;
+    padding: 4px;
+  }
+  
+  .reaction-emoji {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+}
+
+/* ==================== МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 480px) ==================== */
+@media (max-width: 480px) {
+  .message {
+    max-width: 90%;
+  }
+  
+  .message-content {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  .message-meta {
+    font-size: 10px;
+    gap: 6px;
+  }
+  
+  .chat-header {
+    padding: 8px 12px;
+  }
+  
+  .chat-header .username {
+    font-size: 16px;
+  }
+  
+  .message-input {
+    font-size: 14px;
+    padding: 10px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .chat-list-item {
+    padding: 10px;
+  }
+  
+  .chat-list-item .name {
+    font-size: 15px;
+  }
+  
+  .chat-list-item .preview {
+    font-size: 12px;
+  }
+  
+  .reaction-emoji {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+  
+  /* Модальные окна */
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+    padding: 16px;
+  }
+}
+
+/* ==================== АЛЬБОМНАЯ ОРИЕНТАЦИЯ НА ТЕЛЕФОНЕ ==================== */
+@media (max-width: 768px) and (orientation: landscape) {
+  .chat-sidebar,
+  .chat-main {
+    max-width: 100%;
+  }
+  
+  .message {
+    max-width: 70%;
+  }
+  
+  .chat-header {
+    padding: 6px 12px;
+  }
+  
+  .message-input-container {
+    padding: 6px 12px;
+  }
+}
+
+/* ==================== ДЕСКТОП С МАЛЕНЬКИМ ЭКРАНОМ ==================== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .chat-sidebar {
+    width: 280px;
+  }
+  
+  .message {
+    max-width: 70%;
+  }
+}
+
+/* ==================== БОЛЬШИЕ ЭКРАНЫ (4K) ==================== */
+@media (min-width: 2560px) {
+  .chat-sidebar {
+    width: 400px;
+  }
+  
+  .message {
+    max-width: 50%;
+  }
+  
+  .message-content {
+    font-size: 16px;
+  }
+  
+  .message-meta {
+    font-size: 12px;
+  }
+  
+  .chat-list-item .name {
+    font-size: 16px;
+  }
+  
+  .chat-list-item .preview {
+    font-size: 14px;
+  }
+}
+
+/* ==================== УЛУЧШЕНИЯ ДЛЯ СЕНСОРНЫХ УСТРОЙСТВ ==================== */
+@media (hover: none) and (pointer: coarse) {
+  /* Увеличиваем зону касания */
+  button, 
+  .clickable,
+  .reaction-emoji,
+  .chat-list-item {
+    min-height: 44px;
+  }
+  
+  /* Убираем hover эффекты на телефонах */
+  .reaction-emoji:hover {
+    transform: none;
+  }
+  
+  .btn:hover {
+    transform: none;
+  }
+  
+  /* Показываем панель реакций по нажатию */
+  .reactions-panel {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .message:hover .reactions-panel {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ==================== УЛУЧШЕНИЯ ДЛЯ ПРИНТА ==================== */
+@media print {
+  .chat-sidebar,
+  .message-input-container,
+  .back-button,
+  .reactions-panel {
+    display: none;
+  }
+  
+  .chat-main {
+    width: 100%;
+  }
+  
+  .message {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
