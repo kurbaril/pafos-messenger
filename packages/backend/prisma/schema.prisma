@@ -82,6 +82,7 @@ model Message {
   sender      User        @relation("SenderMessages", fields: [senderId], references: [id])
   chat        Chat        @relation(fields: [chatId], references: [id])
   quoted      Message?    @relation("QuotedMessage", fields: [quotedId], references: [id])
+  quotes      Message[]   @relation("QuotedMessage")
   reactions   Reaction[]
   readBy      MessageRead[]
   mentions    Mention[]
