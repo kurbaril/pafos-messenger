@@ -11,7 +11,7 @@ export default defineConfig({
       manifest: {
         name: 'PaFos Messenger',
         short_name: 'PaFos',
-        description: 'Modern messenger for friends',
+        description: 'Modern messaging app for friends',
         theme_color: '#7C3AED',
         background_color: '#0F0F0F',
         display: 'standalone',
@@ -43,18 +43,7 @@ export default defineConfig({
               cacheName: 'api-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/uploads\./,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'image-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 30 * 24 * 60 * 60
+                maxAgeSeconds: 60 * 60 * 24
               }
             }
           }
@@ -83,14 +72,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
-          'socket': ['socket.io-client'],
-          'ui': ['react-hot-toast', 'react-modal', 'react-emoji-picker'],
-          'media': ['wavesurfer.js', 'recordrtc']
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          socket: ['socket.io-client'],
+          ui: ['react-hot-toast', 'react-modal', 'emoji-picker-react']
         }
       }
     }
