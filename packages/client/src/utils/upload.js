@@ -54,6 +54,24 @@ export const uploadVoice = async (file) => {
   return response.json();
 };
 
+export const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const response = await fetch(`${API_URL}/api/profile/avatar`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Upload failed');
+  }
+
+  return response.json();
+};
+
 export const deleteFile = async (type, filename) => {
   const response = await fetch(`${API_URL}/api/upload/${type}/${filename}`, {
     method: 'DELETE',
