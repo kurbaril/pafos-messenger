@@ -8,7 +8,14 @@ export const useSocket = () => {
   const { user } = useAuth();
   const socketRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { addMessage, updateMessage, deleteMessage, updateChat, addReaction, removeReaction, setTypingUsers } = useChatStore();
+  const { 
+    addMessage, 
+    updateMessage, 
+    deleteMessage: deleteMessageFromStore,
+    addReaction: addReactionToStore,
+    removeReaction: removeReactionFromStore,
+    setTypingUsers 
+  } = useChatStore();
 
   useEffect(() => {
     if (!user) {
@@ -52,11 +59,11 @@ export const useSocket = () => {
     });
 
     socket.on('messageDeleted', ({ messageId }) => {
-      deleteMessage(messageId);
+      deleteMessageFromStore(messageId);
     });
 
     socket.on('messageRead', ({ messageId, userId }) => {
-      updateMessage(messageId, { readBy: [...(message.readBy || []), { userId }] });
+      updateMessage(messageId, { readBy: [{ userId }] });
     });
 
     // Typing events
@@ -70,29 +77,24 @@ export const useSocket = () => {
 
     // Reaction events
     socket.on('reactionAdded', ({ messageId, reaction }) => {
-      addReaction(messageId, reaction);
+      addReactionToStore(messageId, reaction);
     });
 
     socket.on('reactionRemoved', ({ messageId, emoji, userId }) => {
-      removeReaction(messageId, emoji, userId);
+      removeReactionFromStore(messageId, emoji, userId);
     });
 
     // Presence events
     socket.on('userOnline', ({ userId }) => {
-      updateChat(null, { userId, online: true });
+      // Update user online status
     });
 
     socket.on('userOffline', ({ userId }) => {
-      updateChat(null, { userId, online: false });
-    });
-
-    socket.on('presence:changed', ({ userId, status, lastSeen }) => {
-      updateChat(null, { userId, status, lastSeen });
+      // Update user offline status
     });
 
     // Chat events
     socket.on('chatUpdated', ({ chatId }) => {
-      // Refresh chat list
       window.dispatchEvent(new CustomEvent('refreshChats'));
     });
 
