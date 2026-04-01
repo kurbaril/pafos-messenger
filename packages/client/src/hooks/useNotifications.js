@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
-import { getNotifications, markNotificationRead, markAllNotificationsRead, getUnreadCount } from '../api';
+import { getNotifications, markNotificationRead, markAllNotificationsRead, getUnreadCount } from '../utils/api';
 
 export const useNotifications = () => {
   const { user } = useAuth();
