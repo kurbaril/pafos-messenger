@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { blockUser, unblockUser, getBlockedUsers, isUserBlocked } from '../api';
+import { blockUser, unblockUser, getBlockedUsers, isUserBlocked } from '../utils/api';
 
 export const useBlocks = () => {
   const [blockedUsers, setBlockedUsers] = useState([]);

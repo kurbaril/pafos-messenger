@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getMessageReadReceipts, markMessageRead } from '../api';
+import { getMessageReadReceipts, markMessageRead } from '../utils/api';
 import { useSocket } from './useSocket';
 
 export const useReadReceipts = () => {

@@ -1,24 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import EmojiPicker from 'emoji-picker-react';
+import React, { useState } from 'react';
+
+const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
 
 export default function MessageReactions({ message, onAddReaction, onRemoveReaction, currentUserId }) {
-  const [showPicker, setShowPicker] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const pickerRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
-        setShowPicker(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   if (!message) return null;
 
-  // Group reactions by emoji
   const reactionsMap = new Map();
   message.reactions?.forEach(reaction => {
     if (!reactionsMap.has(reaction.emoji)) {
@@ -37,11 +25,6 @@ export default function MessageReactions({ message, onAddReaction, onRemoveReact
     } else {
       onAddReaction?.(message.id, emoji);
     }
-    setShowPicker(false);
-  };
-
-  const onEmojiClick = (emojiObject) => {
-    handleReactionClick(emojiObject.emoji);
   };
 
   return (
@@ -50,7 +33,6 @@ export default function MessageReactions({ message, onAddReaction, onRemoveReact
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Display reactions */}
       {Array.from(reactionsMap.entries()).map(([emoji, users]) => (
         <button
           key={emoji}
@@ -69,30 +51,17 @@ export default function MessageReactions({ message, onAddReaction, onRemoveReact
         </button>
       ))}
 
-      {/* Add reaction button (visible on hover) */}
       {hovered && (
-        <button
-          onClick={() => setShowPicker(!showPicker)}
-          className="reaction-add-btn p-1 rounded-full bg-surface-hover hover:bg-surface-hover/80 transition-all"
-          title="Add reaction"
-        >
-          <svg className="w-4 h-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
-      )}
-
-      {/* Emoji picker */}
-      {showPicker && (
-        <div 
-          ref={pickerRef}
-          className="absolute bottom-full left-0 mb-2 z-50"
-        >
-          <EmojiPicker 
-            onEmojiClick={onEmojiClick}
-            width={300}
-            height={400}
-          />
+        <div className="flex gap-1 p-1 rounded-full bg-surface-hover">
+          {EMOJIS.map(emoji => (
+            <button
+              key={emoji}
+              onClick={() => handleReactionClick(emoji)}
+              className="w-7 h-7 rounded-full hover:bg-surface-hover/80 transition-all text-lg"
+            >
+              {emoji}
+            </button>
+          ))}
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { uploadVoice } from '../api';
+import { uploadVoice } from '../utils/api';
 import toast from 'react-hot-toast';
 
 export default function VoiceRecorder({ onSend, disabled }) {
@@ -32,8 +32,6 @@ export default function VoiceRecorder({ onSend, disabled }) {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(audioBlob);
         setAudioURL(url);
-        
-        // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -43,7 +41,7 @@ export default function VoiceRecorder({ onSend, disabled }) {
       
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => {
-          if (prev >= 120) { // Max 2 minutes
+          if (prev >= 120) {
             stopRecording();
             return 120;
           }

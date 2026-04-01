@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { searchMessages, searchChats, searchUsers } from '../api';
+import { searchMessages, searchChats, searchUsers } from '../utils/api';
 import SearchResults from './SearchResults';
 import Avatar from './Avatar';
 

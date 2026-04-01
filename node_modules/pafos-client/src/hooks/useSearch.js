@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { searchMessages, searchChats, searchUsers, globalSearch } from '../api';
+import { searchMessages, searchChats, searchUsers, globalSearch } from '../utils/api';
 
 export const useSearch = () => {
   const [query, setQuery] = useState('');

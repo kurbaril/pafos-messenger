@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { uploadImage, uploadFile } from '../api';
+import { uploadImage, uploadFile } from '../utils/api';
 import toast from 'react-hot-toast';
 
 export default function MediaUploader({ onUpload, disabled }) {
@@ -11,7 +11,6 @@ export default function MediaUploader({ onUpload, disabled }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file size (20MB max)
     if (file.size > 20 * 1024 * 1024) {
       toast.error('File too large. Max 20MB');
       return;
@@ -22,7 +21,6 @@ export default function MediaUploader({ onUpload, disabled }) {
     try {
       let result;
       if (type === 'image') {
-        // Validate image type
         if (!file.type.startsWith('image/')) {
           toast.error('Please select an image file');
           return;
@@ -38,7 +36,6 @@ export default function MediaUploader({ onUpload, disabled }) {
       toast.error(error.message || 'Upload failed');
     } finally {
       setUploading(false);
-      // Clear input
       if (type === 'image' && imageInputRef.current) {
         imageInputRef.current.value = '';
       }
@@ -50,7 +47,6 @@ export default function MediaUploader({ onUpload, disabled }) {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Image Upload */}
       <button
         onClick={() => imageInputRef.current?.click()}
         disabled={disabled || uploading}
@@ -70,7 +66,6 @@ export default function MediaUploader({ onUpload, disabled }) {
         />
       </button>
 
-      {/* File Upload */}
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled || uploading}
@@ -89,7 +84,6 @@ export default function MediaUploader({ onUpload, disabled }) {
         />
       </button>
 
-      {/* Uploading indicator */}
       {uploading && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-surface border border-border rounded-lg text-xs text-text-secondary flex items-center gap-2 whitespace-nowrap">
           <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
