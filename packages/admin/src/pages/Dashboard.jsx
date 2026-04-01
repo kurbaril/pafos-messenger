@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getStats } from '../api';
-import { ActivityChart, UsersChart, MessagesChart } from '../components/Charts';
+import ActivityChart from '../components/Charts/ActivityChart';
+import UsersChart from '../components/Charts/UsersChart';
+import MessagesChart from '../components/Charts/MessagesChart';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -42,56 +44,24 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    {
-      title: 'Total Users',
-      value: stats?.totalUsers || 0,
-      icon: 'users',
-      color: 'primary'
-    },
-    {
-      title: 'Online Now',
-      value: stats?.onlineUsers || 0,
-      icon: 'online',
-      color: 'success'
-    },
-    {
-      title: 'Total Messages',
-      value: stats?.totalMessages || 0,
-      icon: 'messages',
-      color: 'info'
-    },
-    {
-      title: 'Messages Today',
-      value: stats?.messagesToday || 0,
-      icon: 'today',
-      color: 'warning'
-    },
-    {
-      title: 'Active Users (24h)',
-      value: stats?.activeUsersToday || 0,
-      icon: 'active',
-      color: 'primary'
-    },
-    {
-      title: 'Total Groups',
-      value: stats?.totalGroups || 0,
-      icon: 'groups',
-      color: 'info'
-    }
+    { title: 'Total Users', value: stats?.totalUsers || 0, icon: 'users', color: 'primary' },
+    { title: 'Online Now', value: stats?.onlineUsers || 0, icon: 'online', color: 'success' },
+    { title: 'Total Messages', value: stats?.totalMessages || 0, icon: 'messages', color: 'info' },
+    { title: 'Messages Today', value: stats?.messagesToday || 0, icon: 'today', color: 'warning' },
+    { title: 'Active Users (24h)', value: stats?.activeUsersToday || 0, icon: 'active', color: 'primary' },
+    { title: 'Total Groups', value: stats?.totalGroups || 0, icon: 'groups', color: 'info' }
   ];
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-text mb-6">Dashboard</h1>
       
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {statCards.map((card, index) => (
           <StatCard key={index} {...card} />
         ))}
       </div>
       
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card">
           <div className="card-header">
@@ -117,56 +87,6 @@ export default function Dashboard() {
           </div>
           <div className="card-body">
             <UsersChart data={stats?.usersPerDay || []} />
-          </div>
-        </div>
-      </div>
-      
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="card">
-          <div className="card-header">
-            <h2 className="font-semibold text-text">Weekly Activity</h2>
-          </div>
-          <div className="card-body">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-text-secondary">Messages this week</span>
-                <span className="text-text font-semibold">{stats?.messagesWeek || 0}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-secondary">Active users this week</span>
-                <span className="text-text font-semibold">{stats?.activeUsersWeek || 0}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-secondary">Total files uploaded</span>
-                <span className="text-text font-semibold">{stats?.totalFiles || 0}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-secondary">Storage used</span>
-                <span className="text-text font-semibold">
-                  {stats?.storage?.total?.sizeMB || 0} MB
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card">
-          <div className="card-header">
-            <h2 className="font-semibold text-text">Quick Actions</h2>
-          </div>
-          <div className="card-body">
-            <div className="space-y-2">
-              <button className="btn btn-outline w-full justify-center">
-                Export All Data
-              </button>
-              <button className="btn btn-outline w-full justify-center">
-                Backup Database
-              </button>
-              <button className="btn btn-outline w-full justify-center">
-                System Health Check
-              </button>
-            </div>
           </div>
         </div>
       </div>
