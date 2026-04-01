@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Avatar from './Avatar';
-
-const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+import EmojiPicker from 'emoji-picker-react';
 
 export default function MessageReactions({ message, onAddReaction, onRemoveReaction, currentUserId }) {
   const [showPicker, setShowPicker] = useState(false);
@@ -42,9 +40,8 @@ export default function MessageReactions({ message, onAddReaction, onRemoveReact
     setShowPicker(false);
   };
 
-  const getReactionTooltip = (emoji, users) => {
-    const names = users.map(u => u.username).join(', ');
-    return `${emoji} · ${names}`;
+  const onEmojiClick = (emojiObject) => {
+    handleReactionClick(emojiObject.emoji);
   };
 
   return (
@@ -65,7 +62,7 @@ export default function MessageReactions({ message, onAddReaction, onRemoveReact
               ? 'bg-primary/20 text-primary' 
               : 'bg-surface-hover text-text-secondary hover:bg-surface-hover/80'}
           `}
-          title={getReactionTooltip(emoji, users.map(u => u.user))}
+          title={users.map(u => u.user?.username).join(', ')}
         >
           <span>{emoji}</span>
           <span className="text-xs">{users.length}</span>
@@ -89,21 +86,13 @@ export default function MessageReactions({ message, onAddReaction, onRemoveReact
       {showPicker && (
         <div 
           ref={pickerRef}
-          className="absolute bottom-full left-0 mb-2 p-2 bg-surface border border-border rounded-xl shadow-lg flex gap-1 z-50 animate-fadeInUp"
+          className="absolute bottom-full left-0 mb-2 z-50"
         >
-          {EMOJIS.map(emoji => (
-            <button
-              key={emoji}
-              onClick={() => handleReactionClick(emoji)}
-              className={`
-                w-8 h-8 rounded-full flex items-center justify-center text-xl
-                transition-all hover:scale-110 hover:bg-surface-hover
-                ${hasUserReacted(emoji) ? 'bg-primary/20 ring-1 ring-primary' : ''}
-              `}
-            >
-              {emoji}
-            </button>
-          ))}
+          <EmojiPicker 
+            onEmojiClick={onEmojiClick}
+            width={300}
+            height={400}
+          />
         </div>
       )}
     </div>
