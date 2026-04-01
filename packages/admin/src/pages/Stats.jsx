@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getStats, getAdminLogs } from '../api';
-import { ActivityChart, MessagesChart, UsersChart, Heatmap } from '../components/Charts';
+import ActivityChart from '../components/Charts/ActivityChart';
+import MessagesChart from '../components/Charts/MessagesChart';
+import UsersChart from '../components/Charts/UsersChart';
+import Heatmap from '../components/Charts/Heatmap';
 import { formatMessageTime } from '../utils/chartHelpers';
 import toast from 'react-hot-toast';
 
