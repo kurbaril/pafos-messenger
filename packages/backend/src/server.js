@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import session from 'express-session';
@@ -10,7 +10,6 @@ import { PrismaClient } from '@prisma/client';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Routes
 import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
 import chatRoutes from './routes/chats.js';
@@ -24,10 +23,7 @@ import blockRoutes from './routes/blocks.js';
 import adminRoutes from './routes/admin.js';
 import notificationRoutes from './routes/notifications.js';
 
-// WebSocket
 import { setupWebSocket } from './websocket.js';
-
-// Middleware
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { startKeepalive } from './keepalive.js';
 
@@ -42,20 +38,19 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://pafos-group.onrender.com'],
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true
   },
   pingTimeout: 60000,
   pingInterval: 25000
 });
 
-// Session middleware
 const PgSession = pgSession(session);
 export const sessionMiddleware = session({
   store: new PgSession({
     conString: process.env.DATABASE_URL,
     tableName: 'Session',
-    ttl: 365 * 24 * 60 * 60 // 1 year
+    ttl: 365 * 24 * 60 * 60
   }),
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -63,30 +58,21 @@ export const sessionMiddleware = session({
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    domain: '.onrender.com'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   }
 });
-
-// Логирование запросов
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log(`  Origin: ${req.headers.origin}`);
-  next();
-});
-
-// CORS
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://pafos-group.onrender.com'],
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}));
 
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
+}));
+
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
 app.use(express.json({ limit: '50mb' }));
@@ -94,10 +80,8 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(sessionMiddleware);
 app.use(rateLimitMiddleware);
 
-// Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/chats', chatRoutes);
@@ -111,7 +95,6 @@ app.use('/api/blocks', blockRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -120,7 +103,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Auto-create missing tables
+// Serve static frontend
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 async function createTables() {
   try {
     await prisma.$executeRaw`
@@ -131,7 +119,7 @@ async function createTables() {
         CONSTRAINT "Session_pkey" PRIMARY KEY (sid)
       );
     `;
-    console.log('✅ Session table created');
+    console.log('Session table created');
 
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "UserPresence" (
@@ -142,7 +130,7 @@ async function createTables() {
         CONSTRAINT "UserPresence_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
       );
     `;
-    console.log('✅ UserPresence table created');
+    console.log('UserPresence table created');
   } catch (error) {
     console.error('Error creating tables:', error.message);
   }
@@ -150,12 +138,10 @@ async function createTables() {
 
 createTables();
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ error: 'Internal server error' });

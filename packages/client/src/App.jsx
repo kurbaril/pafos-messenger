@@ -287,3 +287,5 @@ export const uploadVoice = async (file) => {
 
   return response.json();
 };
+
+export default App;
