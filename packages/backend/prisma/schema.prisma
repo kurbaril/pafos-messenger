@@ -33,6 +33,7 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  presence     UserPresence?
   sentMessages Message[]   @relation("SenderMessages")
   reactions    Reaction[]
   chats        ChatUser[]
@@ -46,6 +47,15 @@ model User {
 
   @@index([username])
   @@index([lastSeen])
+}
+
+model UserPresence {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  status    String   @default("offline")
+  lastSeen  DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Chat {
