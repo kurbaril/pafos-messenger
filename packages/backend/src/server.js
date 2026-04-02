@@ -62,23 +62,31 @@ export const sessionMiddleware = session({
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: true, // Важно для HTTPS
-    sameSite: 'none', // Важно для кросс-доменных запросов
-    domain: '.onrender.com' // Разрешить cookie для всех поддоменов
+    secure: true,
+    sameSite: 'none',
+    domain: '.onrender.com'
   }
 });
 
-// Apply middleware
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false
-}));
+// Логирование запросов (для отладки CORS)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log(`  Origin: ${req.headers.origin}`);
+  console.log(`  User-Agent: ${req.headers['user-agent']}`);
+  next();
+});
 
+// CORS
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://pafos-group.onrender.com'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
 }));
 
 app.use(express.json({ limit: '50mb' }));
@@ -114,7 +122,6 @@ app.get('/api/health', (req, res) => {
 // Auto-create missing tables on startup
 async function createTables() {
   try {
-    // Create Session table for connect-pg-simple
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "Session" (
         sid VARCHAR NOT NULL COLLATE "default",
@@ -125,7 +132,6 @@ async function createTables() {
     `;
     console.log('✅ Session table created');
 
-    // Create UserPresence table
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "UserPresence" (
         id TEXT PRIMARY KEY,
@@ -141,7 +147,6 @@ async function createTables() {
   }
 }
 
-// Call the function
 createTables();
 
 // 404 handler
@@ -155,10 +160,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Setup WebSocket with session support
 setupWebSocket(io);
-
-// Start keep-alive service for free tier
 startKeepalive();
 
 const PORT = process.env.PORT || 3001;
@@ -168,7 +170,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
 });
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, closing server...');
   await prisma.$disconnect();
