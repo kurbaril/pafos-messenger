@@ -71,7 +71,13 @@ var m = reactDomExports;
   client.createRoot = m.createRoot;
   client.hydrateRoot = m.hydrateRoot;
 }
-const App$1 = App;
+function App() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { textAlign: "center", padding: "50px" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: "PaFos Messenger" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "If you see this, React is working!" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "Now restoring full app..." })
+  ] });
+}
 if ("serviceWorker" in navigator && true) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(console.error);
@@ -79,7 +85,7 @@ if ("serviceWorker" in navigator && true) {
 }
 client.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(BrowserRouter, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(App$1, {}),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       Fe,
       {
@@ -109,4 +115,4 @@ client.createRoot(document.getElementById("root")).render(
     )
   ] }) })
 );
-//# sourceMappingURL=index-DuoIRFk6.js.map
+//# sourceMappingURL=index-tbNcCl16.js.map
