@@ -109,8 +109,20 @@ app.get('/api/health', (req, res) => {
 });
 
 // Auto-create missing tables on startup
-async function createUserPresenceTable() {
+async function createTables() {
   try {
+    // Create Session table for connect-pg-simple
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "Session" (
+        sid VARCHAR NOT NULL COLLATE "default",
+        sess JSON NOT NULL,
+        expire TIMESTAMP(6) NOT NULL,
+        CONSTRAINT "Session_pkey" PRIMARY KEY (sid)
+      );
+    `;
+    console.log('✅ Session table created');
+
+    // Create UserPresence table
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "UserPresence" (
         id TEXT PRIMARY KEY,
@@ -122,12 +134,12 @@ async function createUserPresenceTable() {
     `;
     console.log('✅ UserPresence table created');
   } catch (error) {
-    console.error('Error creating UserPresence table:', error.message);
+    console.error('Error creating tables:', error.message);
   }
 }
 
 // Call the function
-createUserPresenceTable();
+createTables();
 
 // 404 handler
 app.use((req, res) => {
