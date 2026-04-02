@@ -109,7 +109,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Auto-create missing tables on startup
-async function ensureTables() {
+async function createUserPresenceTable() {
   try {
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "UserPresence" (
@@ -120,14 +120,14 @@ async function ensureTables() {
         CONSTRAINT "UserPresence_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
       );
     `;
-    console.log('✅ UserPresence table ensured');
+    console.log('✅ UserPresence table created');
   } catch (error) {
     console.error('Error creating UserPresence table:', error.message);
   }
 }
 
 // Call the function
-ensureTables();
+createUserPresenceTable();
 
 // 404 handler
 app.use((req, res) => {
