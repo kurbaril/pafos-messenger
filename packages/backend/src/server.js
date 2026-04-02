@@ -108,6 +108,27 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Auto-create missing tables on startup
+async function ensureTables() {
+  try {
+    await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "UserPresence" (
+        id TEXT PRIMARY KEY,
+        "userId" TEXT NOT NULL UNIQUE,
+        status TEXT NOT NULL DEFAULT 'offline',
+        "lastSeen" TIMESTAMP NOT NULL DEFAULT NOW(),
+        CONSTRAINT "UserPresence_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
+      );
+    `;
+    console.log('✅ UserPresence table ensured');
+  } catch (error) {
+    console.error('Error creating UserPresence table:', error.message);
+  }
+}
+
+// Call the function
+ensureTables();
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
