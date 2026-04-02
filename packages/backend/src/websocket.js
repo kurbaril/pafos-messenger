@@ -18,6 +18,18 @@ export function setupWebSocket(io) {
     const userId = session?.userId;
     
     if (!userId) {
+      console.log('WebSocket connection rejected: no userId in session');
+      socket.disconnect();
+      return;
+    }
+
+    // Check if user is banned
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isBanned: true }
+    });
+
+    if (user?.isBanned) {
       socket.disconnect();
       return;
     }
@@ -141,7 +153,6 @@ export function setupWebSocket(io) {
             });
             
             for (const mentioned of mentionedUsers) {
-              // Check if mentioned user is in chat
               const isInChat = await prisma.chatUser.findUnique({
                 where: {
                   userId_chatId: {
@@ -291,7 +302,6 @@ export function setupWebSocket(io) {
           select: { id: true, senderId: true }
         });
         
-        // Notify senders
         const senderIds = [...new Set(messages.map(m => m.senderId))];
         for (const senderId of senderIds) {
           const senderSocketId = userSockets.get(senderId);
@@ -314,13 +324,11 @@ export function setupWebSocket(io) {
     // ========== TYPING HANDLERS ==========
 
     socket.on('typing:start', ({ chatId }) => {
-      // Clear existing timeout
       const existing = userTyping.get(userId);
       if (existing && existing.timeout) {
         clearTimeout(existing.timeout);
       }
       
-      // Set new timeout
       const timeout = setTimeout(() => {
         socket.to(`chat:${chatId}`).emit('typing:stop', { userId, chatId });
         userTyping.delete(userId);
@@ -436,7 +444,6 @@ export function setupWebSocket(io) {
         userSockets.delete(userId);
         socketUsers.delete(socket.id);
         
-        // Clear typing timeout
         const typing = userTyping.get(userId);
         if (typing && typing.timeout) {
           clearTimeout(typing.timeout);
