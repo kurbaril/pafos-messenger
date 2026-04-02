@@ -22,6 +22,7 @@ import mentionRoutes from './routes/mentions.js';
 import uploadRoutes from './routes/upload.js';
 import blockRoutes from './routes/blocks.js';
 import adminRoutes from './routes/admin.js';
+import notificationRoutes from './routes/notifications.js';
 
 // WebSocket
 import { setupWebSocket } from './websocket.js';
@@ -68,11 +69,10 @@ export const sessionMiddleware = session({
   }
 });
 
-// Логирование запросов (для отладки CORS)
+// Логирование запросов
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   console.log(`  Origin: ${req.headers.origin}`);
-  console.log(`  User-Agent: ${req.headers['user-agent']}`);
   next();
 });
 
@@ -109,6 +109,7 @@ app.use('/api/mentions', mentionRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/blocks', blockRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -119,7 +120,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Auto-create missing tables on startup
+// Auto-create missing tables
 async function createTables() {
   try {
     await prisma.$executeRaw`

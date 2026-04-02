@@ -85,13 +85,8 @@ export const useSocket = () => {
     });
 
     // Presence events
-    socket.on('userOnline', ({ userId }) => {
-      // Update user online status
-    });
-
-    socket.on('userOffline', ({ userId }) => {
-      // Update user offline status
-    });
+    socket.on('userOnline', ({ userId }) => {});
+    socket.on('userOffline', ({ userId }) => {});
 
     // Chat events
     socket.on('chatUpdated', ({ chatId }) => {
@@ -121,6 +116,18 @@ export const useSocket = () => {
   const emit = (event, data, callback) => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit(event, data, callback);
+    }
+  };
+
+  const connect = () => {
+    if (socketRef.current && !isConnected) {
+      socketRef.current.connect();
+    }
+  };
+
+  const disconnect = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
     }
   };
 
@@ -167,6 +174,8 @@ export const useSocket = () => {
   return {
     socket: socketRef.current,
     isConnected,
+    connect,
+    disconnect,
     sendMessage,
     editMessage,
     deleteMessage,

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { searchUsers } from '../api';
+import { searchUsers } from '../utils/api';
 import Avatar from './Avatar';
 
 export default function MentionInput({ value, onChange, onSend, placeholder, disabled }) {
@@ -25,7 +25,6 @@ export default function MentionInput({ value, onChange, onSend, placeholder, dis
     const cursorPos = e.target.selectionStart;
     setCursorPosition(cursorPos);
 
-    // Check for @ mention
     const textBeforeCursor = newValue.slice(0, cursorPos);
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
     
