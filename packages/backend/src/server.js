@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import session from 'express-session';
@@ -104,7 +104,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve static frontend
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -152,9 +152,9 @@ startKeepalive();
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 PaFos server running on http://localhost:${PORT}`);
-  console.log(`📡 WebSocket ready`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`?? PaFos server running on http://localhost:${PORT}`);
+  console.log(`?? WebSocket ready`);
+  console.log(`?? Environment: ${process.env.NODE_ENV}`);
 });
 
 process.on('SIGTERM', async () => {
