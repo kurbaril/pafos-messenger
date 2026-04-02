@@ -28,6 +28,7 @@ import { setupWebSocket } from './websocket.js';
 
 // Middleware
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
+import { startKeepalive } from './keepalive.js';
 
 dotenv.config();
 
@@ -40,7 +41,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:5174', process.env.CLIENT_URL],
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://pafos-group.onrender.com'],
     credentials: true
   },
   pingTimeout: 60000,
@@ -73,7 +74,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', process.env.CLIENT_URL],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'https://pafos-group.onrender.com'],
   credentials: true
 }));
 
@@ -121,8 +122,11 @@ app.use((err, req, res, next) => {
 // Setup WebSocket with session support
 setupWebSocket(io);
 
+// Start keep-alive service for free tier
+startKeepalive();
+
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 PaFos server running on http://localhost:${PORT}`);
   console.log(`📡 WebSocket ready`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
