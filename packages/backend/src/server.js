@@ -62,8 +62,9 @@ export const sessionMiddleware = session({
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    secure: true, // Важно для HTTPS
+    sameSite: 'none', // Важно для кросс-доменных запросов
+    domain: '.onrender.com' // Разрешить cookie для всех поддоменов
   }
 });
 
@@ -75,7 +76,9 @@ app.use(helmet({
 
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://pafos-group.onrender.com'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
 app.use(express.json({ limit: '50mb' }));
