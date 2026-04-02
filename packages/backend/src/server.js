@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import session from 'express-session';
@@ -82,6 +82,11 @@ app.use(rateLimitMiddleware);
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve static frontend (ДО API роутов)
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath));
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/chats', chatRoutes);
@@ -95,6 +100,7 @@ app.use('/api/blocks', blockRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -103,10 +109,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve static frontend
-app.use(express.static(path.join(__dirname, '../public')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Catch-all for SPA (должно быть после API)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 async function createTables() {
@@ -119,7 +125,7 @@ async function createTables() {
         CONSTRAINT "Session_pkey" PRIMARY KEY (sid)
       );
     `;
-    console.log('Session table created');
+    console.log('✅ Session table created');
 
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "UserPresence" (
@@ -130,7 +136,7 @@ async function createTables() {
         CONSTRAINT "UserPresence_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"(id) ON DELETE CASCADE
       );
     `;
-    console.log('UserPresence table created');
+    console.log('✅ UserPresence table created');
   } catch (error) {
     console.error('Error creating tables:', error.message);
   }
@@ -152,9 +158,9 @@ startKeepalive();
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`?? PaFos server running on http://localhost:${PORT}`);
-  console.log(`?? WebSocket ready`);
-  console.log(`?? Environment: ${process.env.NODE_ENV}`);
+  console.log(`🚀 PaFos server running on http://localhost:${PORT}`);
+  console.log(`📡 WebSocket ready`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
 });
 
 process.on('SIGTERM', async () => {
